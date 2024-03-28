@@ -19,7 +19,7 @@ def generate_images(request: ImageRequest):
     if request.count_request <= 0:
         raise HTTPException(status_code=400, detail="count_request must be greater than 0")
 
-    images = text2image(request.text, request.negative, request.style, request.count_request,  request.width,
+    images = text2image(request.text, request.negative, request.style, request.count_request, request.width,
                         request.height)
 
     if not images:

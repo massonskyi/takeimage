@@ -29,10 +29,6 @@ def get_all_style() -> list:
             ]
 
 
-def ensure_dir(file_path):
-    os.makedirs(file_path, exist_ok=True)
-
-
 def text2image(text, negative=None, style="DEFAULT", count_request=1, width=1024, height=1024) -> list[bytes]:
     result = []
     for iteration in range(count_request):
@@ -44,17 +40,7 @@ def text2image(text, negative=None, style="DEFAULT", count_request=1, width=1024
         image_base64 = images[0]
         image_data = base64.b64decode(image_base64)
 
-        timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-        filename = f"{text.replace(' ', '_')}_{timestamp}_{iteration}.jpg"
-        filepath = os.path.join(save_file_path, timestamp, str(iteration), filename)
-
-        ensure_dir(os.path.dirname(filepath))
-
-        i = Image.open(io.BytesIO(image_data))
-        i.save(fp=filepath)
-
         result.append(image_data)
-        time.sleep(3)
 
     return result
 
@@ -74,8 +60,6 @@ class Text2ImageAPI:
         return data[0]['id']
 
     def generate(self, prompt, model, negative_prompt=None, style="DEFAULT", images=1, width=1024, height=1024):
-        # "negativePromptUnclip": "яркие цвета, кислотность, высокая контрастность",
-        # "style": "ANIME",
         params = {
             "type": "GENERATE",
             "numImages": images,
