@@ -29,49 +29,33 @@ def get_all_style() -> list:
             ]
 
 
-def text2image(text, negative=None, style="DEFAULT", count_request=1, images=1, width=1024, height=1024) \
-        -> list[bytes]:
-    """
-    Converts a text string to an image of the given width and height
-    :param text: Text to convert into an image
-    :param negative: Positive or negative values for negative values (negative values are)
-    :param style: The style of the image (default "DEFAULT")[UHD, KANDINSKY, ANIME]
-    :param count_request: The number of times the image should be generated (default 1)
-    :param images: 1
-    :param width: The width of the image (default 1024)
-    :param height: The height of the image (default 1024)
-    :return:
-    """
-    print("initialized model")
-    r = random.randint(0, 100000)
+def ensure_dir(file_path):
+    os.makedirs(file_path, exist_ok=True)
+
+
+def text2image(text, negative=None, style="DEFAULT", count_request=1, width=1024, height=1024) -> list[bytes]:
     result = []
     for iteration in range(count_request):
-        print(
-            f"settings generation: iteration {iteration}\nr {r}\nprompt {text}\nnegative {negative}\nstyle {style}\n width {width}\nheight {height}")
         api = Text2ImageAPI('https://api-key.fusionbrain.ai/', KANDINSKY_TOKEN, KANDINSKY_SECRET_KEY)
         model_id = api.get_model()
-        uuid = api.generate(prompt=text, model=model_id, negative_prompt=negative, style=style, images=images,
-                            width=width, height=height)
-        print("start generation model")
+        uuid = api.generate(prompt=text, model=model_id, negative_prompt=negative, style=style, width=width, height=height)
         images = api.check_generation(uuid)
 
         image_base64 = images[0]
         image_data = base64.b64decode(image_base64)
-        print("end generation\nstart saving and sender")
-        if not os.path.exists(save_file_path):
-            os.makedirs(save_file_path, exist_ok=True)
 
         timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-        filename = f"{text.split('.')[0].replace(' ', '_')}_{timestamp}_{iteration}_{r}.jpg"
-        filepath = os.path.join(os.path.join(os.path.join(save_file_path, str(timestamp)), str(r)), filename)
+        filename = f"{text.replace(' ', '_')}_{timestamp}_{iteration}.jpg"
+        filepath = os.path.join(save_file_path, timestamp, str(iteration), filename)
 
-        if not os.path.exists(os.path.join(os.path.join(save_file_path, str(timestamp)), str(r))):
-            os.makedirs(os.path.join(os.path.join(save_file_path, str(timestamp)), str(r)), exist_ok=True)
+        ensure_dir(os.path.dirname(filepath))
 
         i = Image.open(io.BytesIO(image_data))
         i.save(fp=filepath)
-        print(f"end saving to{filepath}")
+
         result.append(image_data)
+        time.sleep(3)
+
     return result
 
 

@@ -1,0 +1,107 @@
+/* QWidget */
+QWidget {
+    color: #abb2bf;
+    background-color: #282a36; /* Темный фон */
+}
+
+/* QLabel */
+QLabel {
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+/* QLineEdit */
+QLineEdit {
+    background-color: #44475a; /* Темно-фиолетовый фон */
+    border: 2px solid #6272a4; /* Светло-синяя рамка */
+    border-radius: 5px;
+    padding: 2px 5px;
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QLineEdit:focus {
+    border: 2px solid #ff79c6; /* Ярко-розовая рамка при фокусе */
+}
+
+/* QComboBox */
+QComboBox {
+    background-color: #44475a; /* Темно-фиолетовый фон */
+    border: 2px solid #6272a4; /* Светло-синяя рамка */
+    border-radius: 5px;
+    padding: 2px 5px;
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QComboBox:focus {
+    border: 2px solid #ff79c6; /* Ярко-розовая рамка при фокусе */
+}
+
+QComboBox QAbstractItemView {
+    background-color: #44475a; /* Темно-фиолетовый фон */
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+    selection-background-color: #ff79c6; /* Ярко-розовый цвет выделения */
+}
+
+/* QSpinBox */
+QSpinBox {
+    background-color: #44475a; /* Темно-фиолетовый фон */
+    border: 2px solid #6272a4; /* Светло-синяя рамка */
+    border-radius: 5px;
+    padding: 2px 5px;
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QSpinBox:focus {
+    border: 2px solid #ff79c6; /* Ярко-розовая рамка при фокусе */
+}
+
+/* QPushButton */
+QPushButton {
+    background-color: #6272a4; /* Светло-синий фон */
+    border: 2px solid #6272a4; /* Светло-синяя рамка */
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QPushButton:hover {
+    background-color: #bd93f9; /* Лавандовый фон при наведении */
+    color: #282a36; /* Темный фон для текста */
+}
+
+QPushButton:pressed {
+    background-color: #ff79c6; /* Ярко-розовый фон при нажатии */
+    color: #282a36; /* Темный фон для текста */
+}
+
+/* QScrollArea */
+QScrollArea {
+    background-color: #282a36; /* Темный фон */
+}
+
+/* QMessageBox */
+QMessageBox {
+    background-color: #282a36; /* Темный фон */
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QMessageBox QLabel {
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QMessageBox QPushButton {
+    background-color: #6272a4; /* Светло-синий фон */
+    border: 2px solid #6272a4; /* Светло-синяя рамка */
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: #f3e6ff; /* Нежно-фиолетовый текст */
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #bd93f9; /* Лавандовый фон при наведении */
+    color: #282a36; /* Темный фон для текста */
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #ff79c6; /* Ярко-розовый фон при нажатии */
+    color: #282a36; /* Темный фон для текста */
+}

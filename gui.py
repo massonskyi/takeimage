@@ -4,9 +4,12 @@ import threading
 import time
 
 from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtCore import QPropertyAnimation
+from PySide6.QtGui import QLinearGradient, QColor
+from PySide6.QtWidgets import QGraphicsOpacityEffect
+
 import requests
 from server import app
-from t2image.Text2Image import get_all_style
 
 # Create an event to signal server startup
 server_started_event = threading.Event()
@@ -15,7 +18,7 @@ server_started_event = threading.Event()
 def run_server():
     print("Starting server...")
     import uvicorn
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    config = uvicorn.Config(app.app, host="0.0.0.0", port=8000)
     server = uvicorn.Server(config)
 
     server_started_event.set()
@@ -32,19 +35,57 @@ def check_server_status():
         return False
 
 
+class GradientBackground(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self._gradientOffset = 0
+        self.gradient = QtGui.QLinearGradient(0, 0, 0, self.height())
+        self.gradient.setSpread(QtGui.QGradient.Spread.ReflectSpread)
+        self.gradient.setCoordinateMode(QtGui.QGradient.CoordinateMode.ObjectBoundingMode)
+        self.gradient.setColorAt(0.0, QtGui.QColor("#f3e6ff"))  # Верхний цвет
+        self.gradient.setColorAt(1.0, QtGui.QColor("#a6c1ee"))  # Нижний цвет
+
+        self.animation = QtCore.QPropertyAnimation(self, b"gradientOffset")
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(self.height())
+        self.animation.setDuration(5000)  # Время анимации в миллисекундах
+        self.animation.setLoopCount(-1)  # Бесконечный цикл
+
+        self.animation.finished.connect(self.animationFinished)
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.fillRect(self.rect(), self.gradient)
+
+    def getGradientOffset(self):
+        return self._gradientOffset
+
+    def setGradientOffset(self, value):
+        self._gradientOffset = value
+        self.gradient.setStart(0, value)
+        self.gradient.setFinalStop(0, value + self.height())
+        self.update()
+
+    gradientOffset = QtCore.Property(int, getGradientOffset, setGradientOffset)
+
+    def animationFinished(self):
+        # При завершении анимации начинаем ее заново
+        self.animation.start()
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
         print("Server started\nInitializing GUI...")
-        qss_file = open("assets/style/gitdark.qss", "r")
+        qss_file = open("assets/style/neon.qss", "r")
         with qss_file:
             st = qss_file.read()
             app.setStyleSheet(st)
 
         self.setWindowTitle("Text to Image API")
         self.setFixedSize(1280, 800)
-
+        self.gradientBackground = GradientBackground()
         # Text input fields
         self.text_input = QtWidgets.QLineEdit(placeholderText="Enter text")
         self.negative_input = QtWidgets.QLineEdit(placeholderText="Enter negative (optional)")
@@ -61,7 +102,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Send button with disabled state initially
         self.send_button = QtWidgets.QPushButton("Generate Images")
-        self.send_button.setEnabled(True)  # Disable until server is ready
+        self.send_button.setEnabled(True)
         self.send_button.clicked.connect(self.send_request)
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -81,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(self.count_input)
         main_layout.addWidget(self.send_button)
         main_layout.addWidget(self.scroll_area)
-
+        main_layout.addWidget(self.gradientBackground)
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
@@ -95,21 +136,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_request(self):
         text = self.text_input.text()
-        negative = self.negative_input.text() if self.negative_input.text() != '' else "nullptr"
+        negative = self.negative_input.text()
         style = self.style_input.currentText()
         count_request = self.count_input.value()
-        print(text, negative, style, int(count_request), 1, str('1024'), str('1024'))
-        response = requests.post(
-            "http://0.0.0.0:8000/api/v1/generate",
-            data={
-                "text": text,
-                "negative": negative,
-                "style": style,
-                "count_request": count_request,
-                "width": 1024,
-                "height": 1024
-            },
-        )
+        json = {
+            "text": str(text),
+            "style": str(style),
+            "width": int(1024),
+            "height": int(1024)
+        }
+
+        if negative:
+            json["negative"] = str(negative)
+
+        if count_request:
+            json["count_request"] = int(count_request)
+
+        response = requests.post("http://0.0.0.0:8000/api/v1/generate", json=json)
 
         if response.status_code == 200:
             for image_data in response.json():
@@ -121,6 +164,18 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.layout.addWidget(image_label)
         else:
             QtWidgets.QMessageBox.critical(self, "Error", f"Request failed with status code {response.status_code}")
+
+    def mouseDoubleClickEvent(self, event):
+        child = self.childAt(event.pos())
+        if isinstance(child, QtWidgets.QLabel) and child.pixmap():
+            pixmap = child.pixmap()
+            dialog = QtWidgets.QDialog(self)
+            dialog.setWindowTitle("Image Preview")
+            dialog.resize(pixmap.width(), pixmap.height())
+            label = QtWidgets.QLabel(dialog)
+            label.setPixmap(pixmap)
+            label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            dialog.exec_()
 
     @staticmethod
     def get_styles():
