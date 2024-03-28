@@ -1,13 +1,7 @@
 import base64
-import datetime
-import io
 import json
 import os
-import random
 import time
-from typing import List
-
-from PIL import Image
 import requests
 
 KANDINSKY_TOKEN, KANDINSKY_SECRET_KEY = ('4162FAF83B851FC4B579A20700880E9C', 'F292C805F82E2A081644F5F850EF6F2E')
