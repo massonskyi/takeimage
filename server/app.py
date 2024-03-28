@@ -1,9 +1,9 @@
 import base64
-from typing import List
 import logging
+
 from cachetools import TTLCache, cached
 from fastapi import FastAPI, HTTPException
-
+from typing import List
 from modules.txt2txt.text2text import ChatAi
 from server.models import ImageRequest, QuestRequest
 from modules.t2i.Text2Image import text2image, get_all_style
@@ -53,11 +53,9 @@ def generate_images(request: ImageRequest):
 def generate_answer(request: QuestRequest):
     logger = logging.getLogger(__name__)
 
-    # 1. Error handling and validation
     if not request.query or not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
-    # 2. Caching
     cache = TTLCache(maxsize=100, ttl=60)
 
     @cached(cache)
@@ -67,7 +65,6 @@ def generate_answer(request: QuestRequest):
                              stream=request.stream, max_tokens=request.max_tokens,
                              repetition_penalty=request.repetition_penalty)
 
-    # 3. Asynchronous processing
     answer = get_answer_from_cache(request.query)
 
     logger.info(f"Generated answer for query: {request.query}")

@@ -3,7 +3,7 @@ import json
 
 import aiohttp
 from PySide6 import QtCore, QtWidgets
-
+from interface.urls import LOCAL_URL
 from interface.subwindow.SettingsChatWindow import SettingsWindow
 
 
@@ -177,7 +177,7 @@ class ChatTab(QtWidgets.QWidget):
             }
             print(json_data)  # Print JSON data for debugging
             async with aiohttp.ClientSession() as session:
-                async with session.post('http://0.0.0.0:8000/api/v1/quest', json=json_data) as response:
+                async with session.post(f'{LOCAL_URL}/api/v1/quest', json=json_data) as response:
                     if response.status == 200:
                         data = await response.json()
                         response = data[0]['answer']

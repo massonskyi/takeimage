@@ -4,7 +4,10 @@ import os
 import time
 import requests
 
-KANDINSKY_TOKEN, KANDINSKY_SECRET_KEY = ('4162FAF83B851FC4B579A20700880E9C', 'F292C805F82E2A081644F5F850EF6F2E')
+from config import (
+    read_env
+)
+KANDINSKY_TOKEN, KANDINSKY_SECRET_KEY = read_env()['KANDINSKY_TOKEN'], read_env()['KANDINSKY_SECRET_KEY']
 
 BASE_DIR = os.getcwd()
 

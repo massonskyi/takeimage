@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/env python
 # main.py
+
+import os
 import sys
 import threading
 import time
 
-from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication
 import asyncio
 from interface.MainWindow import MainWindow
@@ -17,7 +18,6 @@ def check_server_status():
         print("Server is ready!")
         return True
     else:
-        # Handle server not yet ready (e.g., display a waiting message)
         print("Server not yet ready...")
         return False
 
@@ -33,11 +33,45 @@ class AsyncQApplication(QApplication):
         super().exec_()
 
 
+def check_and_create_critical_items(critical_items) -> bool:
+    missing_items = []
+    for item in critical_items:
+        if os.path.exists(item):
+            print(f"Файл: {item} найден.") if os.path.isfile(item) else print(f"Директория: {item} найден.")
+        else:
+            print(f"Файл: {item} отсутствует и будет создан.") if os.path.isfile(item) \
+                else print(f"Директория: {item} отсутствует и будет создан.")
+            try:
+                if '.' in item:
+                    with open(item, 'w') as file:
+                        pass
+                else:
+                    os.makedirs(item)
+                print(f"{item} успешно создан.")
+            except Exception as e:
+                print(f"Ошибка при создании {item}: {e}")
+                missing_items.append(item)
+    if missing_items:
+        print("Не удалось создать следующие элементы:", missing_items)
+        return False
+    else:
+        print("Все критически важные элементы найдены или созданы.")
+        return True
+
+
+critical_items = ["config.env", "assets", "interface", "modules", "server", "config.py"]
+
 if __name__ == "__main__":
+    if not check_and_create_critical_items(critical_items):
+        exit(-1)
+
     threading.Thread(target=run_server, daemon=True).start()
 
+    """
+    time.sleep(2)
     while not check_server_status():
         time.sleep(2)
+    """
 
     app = AsyncQApplication([])
 

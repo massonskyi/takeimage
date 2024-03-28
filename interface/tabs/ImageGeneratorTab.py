@@ -9,6 +9,9 @@ import aiohttp
 import requests
 from PIL import Image
 from PySide6 import QtWidgets, QtCore, QtGui
+from interface.urls import (
+    LOCAL_URL
+)
 
 
 def ensure_dir(file_path):
@@ -150,7 +153,7 @@ class ImageGeneratorTab(QtWidgets.QWidget):
             json["count_request"] = int(count_request)
 
         async with aiohttp.ClientSession() as session:
-            async with session.post("http://0.0.0.0:8000/api/v1/generate", json=json) as response:
+            async with session.post(f"{LOCAL_URL}/api/v1/generate", json=json) as response:
                 if response.status == 200:
                     self.progress_bar.hide()
                     self.status_label.setText("Изображения сгенерированы!")
@@ -213,7 +216,7 @@ class ImageGeneratorTab(QtWidgets.QWidget):
 
     @staticmethod
     def get_styles():
-        response = requests.get("http://0.0.0.0:8000/api/v1/styles")
+        response = requests.get(f"{LOCAL_URL}/api/v1/styles")
         if response.status_code == 200:
             return [style for style in response.json()]
         else:
