@@ -2,41 +2,13 @@ import asyncio
 import base64
 import io
 import os
-import sys
 import threading
-import time
 from datetime import datetime
 
-import PySide6
+import aiohttp
 import requests
 from PIL import Image
-from PySide6 import QtCore, QtWidgets, QtGui
-import aiohttp
-from server import app
-from concurrent.futures import ThreadPoolExecutor
-
-# Create an event to signal server startup
-server_started_event = threading.Event()
-
-
-def run_server():
-    print("Starting server...")
-    import uvicorn
-    config = uvicorn.Config(app.app, host="0.0.0.0", port=8000)
-    server = uvicorn.Server(config)
-
-    server_started_event.set()
-    server.run()
-
-
-def check_server_status():
-    if server_started_event.is_set():
-        print("Server is ready!")
-        return True
-    else:
-        # Handle server not yet ready (e.g., display a waiting message)
-        print("Server not yet ready...")
-        return False
+from PySide6 import QtWidgets, QtCore, QtGui
 
 
 def ensure_dir(file_path):
@@ -49,7 +21,7 @@ class CustomEvent(QtCore.QEvent):
         self.image_data = image_data
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class ImageGeneratorTab(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.status_label = None
@@ -67,6 +39,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_ready_image = []
         self.current_settings = {}
         self.save_directory = None
+
+        self.create_widgets()
+        self.setup_layout()
 
     def create_widgets(self):
         self.text_input = QtWidgets.QLineEdit(
@@ -102,6 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.progress_bar = QtWidgets.QProgressBar()
         self.progress_bar.hide()
         self.status_label = QtWidgets.QLabel()
+        ...
 
     def setup_layout(self):
         main_layout = QtWidgets.QHBoxLayout()
@@ -138,35 +114,7 @@ class MainWindow(QtWidgets.QMainWindow):
         right_layout.addLayout(subprocess_layout)
         main_layout.addLayout(left_layout)
         main_layout.addLayout(right_layout)
-
-        central_widget = QtWidgets.QWidget()
-        central_widget.setLayout(main_layout)
-        self.setCentralWidget(central_widget)
-
-        # Copyright information (optional)
-        copyright_label = QtWidgets.QLabel("Copyright © 2023 massonskyi")
-        status_bar = self.statusBar()
-        status_bar.addPermanentWidget(copyright_label)
-
-    def initialize_ui(self):
-        print("Server started\nInitializing GUI...")
-        qss_file = open("assets/style/neon.qss", "r")
-        with qss_file:
-            st = qss_file.read()
-            app.setStyleSheet(st)
-
-        self.setWindowTitle("Kandinsky Image Generator API/UI")
-        self.setFixedSize(1280, 800)
-
-        self.create_widgets()
-        self.setup_layout()
-
-        # Copyright information (optional)
-        copyright_label = QtWidgets.QLabel("Copyright © 2023 massonskyi")
-        status_bar = self.statusBar()
-        status_bar.addPermanentWidget(copyright_label)
-
-        print("Application started")
+        self.setLayout(main_layout)
 
     async def send_request(self):
 
@@ -228,7 +176,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_ready_image.append(base64.b64decode(image_data))
         pixmap = QtGui.QPixmap.fromImage(image)
         label = QtWidgets.QLabel()
-        label.setPixmap(pixmap.scaled(self.scroll_area.width(), self.scroll_area.height(), QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+        label.setPixmap(pixmap.scaled(self.scroll_area.width(), self.scroll_area.height(),
+                                      QtCore.Qt.AspectRatioMode.KeepAspectRatio))
         label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.scroll_layout.addWidget(label)
         self.progress_bar.hide()
@@ -297,18 +246,3 @@ class MainWindow(QtWidgets.QMainWindow):
                                                                os.path.expanduser("~"))
         if directory:
             self.save_directory = directory
-
-
-if __name__ == "__main__":
-    threading.Thread(target=run_server, daemon=True).start()
-
-    while not check_server_status():
-        time.sleep(2)
-
-    app = QtWidgets.QApplication(sys.argv)
-
-    window = MainWindow()
-    window.initialize_ui()
-    window.show()
-
-    sys.exit(app.exec())
