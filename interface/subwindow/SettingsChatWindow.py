@@ -3,24 +3,42 @@ import json
 from PySide6 import QtWidgets
 
 
+def extract_color(style_sheet):
+    if style_sheet:
+        parts = style_sheet.split(": ")
+        if len(parts) == 2:
+            return parts[1][:-1]
+    return None
+
+
+def set_button_color(button, color):
+    if color:
+        button.setStyleSheet(f"background-color: {color};")
+
+
 class SettingsWindow(QtWidgets.QDialog):
     def __init__(self, chat_tab):
         super().__init__()
         self.chat_tab = chat_tab
-        self.setWindowOpacity(0.5)
+        self.initialize_ui()
+
+    def initialize_ui(self):
+        layout = QtWidgets.QVBoxLayout()
 
         # Create input fields for parameters
         self.temperature_field = QtWidgets.QDoubleSpinBox()
-        self.top_p_field = QtWidgets.QDoubleSpinBox()
-        self.n_field = QtWidgets.QSpinBox()
-        self.max_tokens_field = QtWidgets.QSpinBox()
-        self.repetition_penalty_field = QtWidgets.QDoubleSpinBox()
-
-        # Set initial values
         self.temperature_field.setValue(self.chat_tab.temperature)
+
+        self.top_p_field = QtWidgets.QDoubleSpinBox()
         self.top_p_field.setValue(self.chat_tab.top_p)
+
+        self.n_field = QtWidgets.QSpinBox()
         self.n_field.setValue(self.chat_tab.n)
+
+        self.max_tokens_field = QtWidgets.QSpinBox()
         self.max_tokens_field.setValue(self.chat_tab.max_tokens)
+
+        self.repetition_penalty_field = QtWidgets.QDoubleSpinBox()
         self.repetition_penalty_field.setValue(self.chat_tab.repetition_penalty)
 
         # Create font size combo box
@@ -33,28 +51,24 @@ class SettingsWindow(QtWidgets.QDialog):
         self.font_weight_combo.addItems(["Normal", "Bold"])
         self.font_weight_combo.setCurrentIndex(1)
 
-        # Create message color labels and combo boxes
+        # Create message color labels and buttons
         self.user_color_label = QtWidgets.QLabel("User message color:")
-        self.user_color_combo = QtWidgets.QComboBox()
-        self.user_color_combo.addItems(["blue", "green", "red", "yellow", "cyan", "magenta"])
-        self.user_color_combo.setCurrentIndex(0)
+        self.user_color_button = QtWidgets.QPushButton()
+        self.user_color_button.clicked.connect(self.set_user_color)
 
         self.bot_color_label = QtWidgets.QLabel("Bot message color:")
-        self.bot_color_combo = QtWidgets.QComboBox()
-        self.bot_color_combo.addItems(["blue", "green", "red", "yellow", "cyan", "magenta"])
-        self.bot_color_combo.setCurrentIndex(1)
+        self.bot_color_button = QtWidgets.QPushButton()
+        self.bot_color_button.clicked.connect(self.set_bot_color)
 
         # Create background color fields
         self.background_color_label = QtWidgets.QLabel("Background color:")
-        self.background_color_combo = QtWidgets.QComboBox()
-        self.background_color_combo.addItems(["black", "white", "gray", "blue", "green", "red"])
-        self.background_color_combo.setCurrentIndex(0)
+        self.background_color_button = QtWidgets.QPushButton()
+        self.background_color_button.clicked.connect(self.set_background_color)
 
         # Create border color fields
         self.border_color_label = QtWidgets.QLabel("Border color:")
-        self.border_color_combo = QtWidgets.QComboBox()
-        self.border_color_combo.addItems(["black", "white", "gray", "blue", "green", "red"])
-        self.border_color_combo.setCurrentIndex(1)
+        self.border_color_button = QtWidgets.QPushButton()
+        self.border_color_button.clicked.connect(self.set_border_color)
 
         # Create OK and Cancel buttons
         self.ok_button = QtWidgets.QPushButton("OK")
@@ -62,63 +76,58 @@ class SettingsWindow(QtWidgets.QDialog):
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.reject)
 
-        # Create labels for input fields
-        self.temperature_label = QtWidgets.QLabel("Temperature:")
-        self.top_p_label = QtWidgets.QLabel("Top P:")
-        self.n_label = QtWidgets.QLabel("N:")
-        self.max_tokens_label = QtWidgets.QLabel("Max Tokens:")
-        self.repetition_penalty_label = QtWidgets.QLabel("Repetition Penalty:")
-
-        layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.temperature_label, 0, 0)
-        layout.addWidget(self.temperature_field, 0, 1)
-        layout.addWidget(self.top_p_label, 1, 0)
-        layout.addWidget(self.top_p_field, 1, 1)
-        layout.addWidget(self.n_label, 2, 0)
-        layout.addWidget(self.n_field, 2, 1)
-        layout.addWidget(self.max_tokens_label, 3, 0)
-        layout.addWidget(self.max_tokens_field, 3, 1)
-        layout.addWidget(self.repetition_penalty_label, 4, 0)
-        layout.addWidget(self.repetition_penalty_field, 4, 1)
-
-        layout.addWidget(QtWidgets.QLabel("Font size:"), 5, 0)
-        layout.addWidget(self.font_size_combo, 5, 1)
-        layout.addWidget(QtWidgets.QLabel("Font weight:"), 6, 0)
-        layout.addWidget(self.font_weight_combo, 6, 1)
-        layout.addWidget(self.user_color_label, 7, 0)
-        layout.addWidget(self.user_color_combo, 7, 1)
-        layout.addWidget(self.bot_color_label, 8, 0)
-        layout.addWidget(self.bot_color_combo, 8, 1)
-        layout.addWidget(self.background_color_label, 9, 0)
-        layout.addWidget(self.background_color_combo, 9, 1)
-        layout.addWidget(self.border_color_label, 10, 0)
-        layout.addWidget(self.border_color_combo, 10, 1)
-        layout.addWidget(self.ok_button, 11, 0)
-        layout.addWidget(self.cancel_button, 11, 1)
+        # Add widgets to layout
+        layout.addWidget(self.temperature_field)
+        layout.addWidget(self.top_p_field)
+        layout.addWidget(self.n_field)
+        layout.addWidget(self.max_tokens_field)
+        layout.addWidget(self.repetition_penalty_field)
+        layout.addWidget(self.font_size_combo)
+        layout.addWidget(self.font_weight_combo)
+        layout.addWidget(self.user_color_label)
+        layout.addWidget(self.user_color_button)
+        layout.addWidget(self.bot_color_label)
+        layout.addWidget(self.bot_color_button)
+        layout.addWidget(self.background_color_label)
+        layout.addWidget(self.background_color_button)
+        layout.addWidget(self.border_color_label)
+        layout.addWidget(self.border_color_button)
+        layout.addWidget(self.ok_button)
+        layout.addWidget(self.cancel_button)
 
         self.setLayout(layout)
 
+    def set_user_color(self):
+        color = QtWidgets.QColorDialog.getColor()
+        if color.isValid():
+            self.user_color_button.setStyleSheet(f"background-color: {color.name()};")
+            self.chat_tab.set_user_color(color.name())
+
+    def set_bot_color(self):
+        color = QtWidgets.QColorDialog.getColor()
+        if color.isValid():
+            self.bot_color_button.setStyleSheet(f"background-color: {color.name()};")
+            self.chat_tab.set_bot_color(color.name())
+
+    def set_background_color(self):
+        color = QtWidgets.QColorDialog.getColor()
+        if color.isValid():
+            self.background_color_button.setStyleSheet(f"background-color: {color.name()};")
+            self.chat_tab.set_background_color(color.name())
+
+    def set_border_color(self):
+        color = QtWidgets.QColorDialog.getColor()
+        if color.isValid():
+            self.border_color_button.setStyleSheet(f"background-color: {color.name()};")
+            self.chat_tab.set_border_color(color.name())
+
     def accept(self):
-        # Получение выбранных параметров
-        font_size = int(self.font_size_combo.currentText())
-        font_weight = "bold" if self.font_weight_combo.currentText() == "Bold" else "normal"
-        user_color = self.user_color_combo.currentText()
-        bot_color = self.bot_color_combo.currentText()
-        background_color = self.background_color_combo.currentText()
-        border_color = self.border_color_combo.currentText()
         temperature = self.temperature_field.value()
         top_p = self.top_p_field.value()
         n = self.n_field.value()
         max_tokens = self.max_tokens_field.value()
         repetition_penalty = self.repetition_penalty_field.value()
 
-        # Применение настроек к ChatTab
-        self.chat_tab.set_font_size(font_size)
-        self.chat_tab.set_font_weight(font_weight)
-        self.chat_tab.set_user_color(user_color)
-        self.chat_tab.set_bot_color(bot_color)
-        self.chat_tab.set_background_color(background_color)
-        self.chat_tab.set_border_color(border_color)
         self.chat_tab.set_temperature(temperature)
         self.chat_tab.set_top_p(top_p)
         self.chat_tab.set_n(n)
@@ -134,10 +143,10 @@ class SettingsWindow(QtWidgets.QDialog):
         settings = {
             "font_size": self.font_size_combo.currentText(),
             "font_weight": self.font_weight_combo.currentText(),
-            "user_color": self.user_color_combo.currentText(),
-            "bot_color": self.bot_color_combo.currentText(),
-            "background_color": self.background_color_combo.currentText(),
-            "border_color": self.border_color_combo.currentText(),
+            "user_color": self.user_color_button.palette().button().color().name(),
+            "bot_color": self.bot_color_button.palette().button().color().name(),
+            "background_color": self.background_color_button.palette().button().color().name(),
+            "border_color": self.border_color_button.palette().button().color().name(),
             "temperature": self.temperature_field.value(),
             "top_p": self.top_p_field.value(),
             "n": self.n_field.value(),
@@ -152,17 +161,26 @@ class SettingsWindow(QtWidgets.QDialog):
             with open("assets/settings.json", "r") as file:
                 settings = json.load(file)
                 # Установка сохраненных параметров в виджеты
-                self.font_size_combo.setCurrentText(str(settings["font_size"]))
-                self.font_weight_combo.setCurrentText(settings["font_weight"])
-                self.user_color_combo.setCurrentText(settings["user_color"])
-                self.bot_color_combo.setCurrentText(settings["bot_color"])
-                self.background_color_combo.setCurrentText(settings["background_color"])
-                self.border_color_combo.setCurrentText(settings["border_color"])
-                self.temperature_field.setValue(settings["temperature"])
-                self.top_p_field.setValue(settings["top_p"])
-                self.n_field.setValue(settings["n"])
-                self.max_tokens_field.setValue(settings["max_tokens"])
-                self.repetition_penalty_field.setValue(settings["repetition_penalty"])
+                self.font_size_combo.setCurrentText(settings.get("font_size", "16"))
+                self.font_weight_combo.setCurrentText(settings.get("font_weight", "Bold"))
+                self.temperature_field.setValue(settings.get("temperature", 0.7))
+                self.top_p_field.setValue(settings.get("top_p", 0.1))
+                self.n_field.setValue(settings.get("n", 1))
+                self.max_tokens_field.setValue(settings.get("max_tokens", 99))
+                self.repetition_penalty_field.setValue(settings.get("repetition_penalty", 1.0))
+
+                # Применение сохраненных цветов к кнопкам
+                user_color = extract_color(settings.get("user_color"))
+                bot_color = extract_color(settings.get("bot_color"))
+                background_color = extract_color(settings.get("background_color"))
+                border_color = extract_color(settings.get("border_color"))
+
+                set_button_color(self.user_color_button, user_color)
+                set_button_color(self.bot_color_button, bot_color)
+                set_button_color(self.background_color_button, background_color)
+                set_button_color(self.border_color_button, border_color)
+
         except FileNotFoundError:
             # Обработка случая, когда файл настроек не найден
             pass
+

@@ -2,8 +2,9 @@
 
 from PySide6 import QtWidgets
 
-from interface.ChatTab import ChatTab
-from interface.ImageGeneratorTab import ImageGeneratorTab
+from interface.tabs.ChatTab import ChatTab
+from interface.tabs.ImageGeneratorTab import ImageGeneratorTab
+from interface.tabs.ProgramInfoTab import ProgramInfoTab
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -28,15 +29,17 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create tabs
         image_generator_tab = ImageGeneratorTab()
         chat_tab = ChatTab()
+        program_info_tab = ProgramInfoTab()  # New program info tab
 
         # Add tabs to tab widget
         tab_widget.addTab(image_generator_tab, "Image Generator")
         tab_widget.addTab(chat_tab, "Chat")
-
-        # Create 5 empty tabs
-        for i in range(3, 8):
+        # Create 4 empty tabs
+        for i in range(3, 6):
             tab = QtWidgets.QWidget()
             tab_widget.addTab(tab, f"Tab {i}")
+        tab_widget.addTab(program_info_tab, "Информация о программе")  # Add program info tab
+
         # Set central widget to the tab widget
         self.setCentralWidget(tab_widget)
 

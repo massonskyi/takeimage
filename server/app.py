@@ -4,9 +4,9 @@ import logging
 from cachetools import TTLCache, cached
 from fastapi import FastAPI, HTTPException
 
-from modules.text2text import ChatAi
+from modules.txt2txt.text2text import ChatAi
 from server.models import ImageRequest, QuestRequest
-from modules.Text2Image import text2image, get_all_style
+from modules.t2i.Text2Image import text2image, get_all_style
 
 app = FastAPI()
 

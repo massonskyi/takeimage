@@ -7,6 +7,14 @@ from PySide6 import QtCore, QtWidgets
 from interface.subwindow.SettingsChatWindow import SettingsWindow
 
 
+def extract_color(style_sheet):
+    if style_sheet:
+        parts = style_sheet.split(": ")
+        if len(parts) == 2:
+            return parts[1][:-1]
+    return None
+
+
 class ChatTab(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -69,27 +77,21 @@ class ChatTab(QtWidgets.QWidget):
         try:
             with open("assets/settings.json", "r") as file:
                 settings = json.load(file)
-                # Установка сохраненных параметров в виджеты
-                self._user_color = settings.get("user_color", "#FFFFFF")  # Значение по умолчанию для цвета пользователя
-                self._bot_color = settings.get("bot_color", "#00FF00")  # Значение по умолчанию для цвета бота
-                self._background_color = settings.get("background_color",
-                                                      "#282a36")  # Значение по умолчанию для цвета фона
-                self._border_color = settings.get("border_color", "#FFFFFF")  # Значение по умолчанию для цвета границ
-                self.apply_user_color()
-                self.apply_bot_color()
-                self.apply_background_color()
-                self.apply_border_color()
+                # Установка сохраненных параметров
+                self._user_color = extract_color(settings.get("user_color", "#FFFFFF"))
+                self._bot_color = extract_color(settings.get("bot_color", "#00FF00"))
+                self._background_color = extract_color(settings.get("background_color", "#282a36"))
+                self._border_color = extract_color(settings.get("border_color", "#FFFFFF"))
+                # Применяем значения к виджетам
+                self.apply_styles()
         except FileNotFoundError:
             # Если файл не найден, используем значения по умолчанию
-            self._user_color = "#FFFFFF"  # Значение по умолчанию для цвета пользователя
-            self._bot_color = "#00FF00"  # Значение по умолчанию для цвета бота
-            self._background_color = "#282a36"  # Значение по умолчанию для цвета фона
-            self._border_color = "#FFFFFF"  # Значение по умолчанию для цвета границ
+            self._user_color = "#FFFFFF"
+            self._bot_color = "#00FF00"
+            self._background_color = "#282a36"
+            self._border_color = "#FFFFFF"
             # Применяем значения по умолчанию к виджетам
-            self.apply_user_color()
-            self.apply_bot_color()
-            self.apply_background_color()
-            self.apply_border_color()
+            self.apply_styles()
 
     def apply_textedit_styles(self):
         self.chat_history.setStyleSheet("""
@@ -162,7 +164,6 @@ class ChatTab(QtWidgets.QWidget):
     async def send_message(self):
         user_message = self.user_input.text()
         if user_message:
-            self.add_message(user_message, "user")
             json_data = {
                 'query': user_message,
                 'temperature': float(self.temperature),
@@ -184,6 +185,7 @@ class ChatTab(QtWidgets.QWidget):
             self.user_input.clear()
 
     def on_send_button_clicked(self):
+        self.add_message(self.user_input.text(), "user")
         task = asyncio.ensure_future(self.send_message())
 
         def done_callback(task):
@@ -207,39 +209,42 @@ class ChatTab(QtWidgets.QWidget):
     def set_n(self, n):
         self.n = n
 
+    def apply_styles(self):
+        style_sheet = f"""
+            QTextEdit {{
+                background-color: {self._background_color};
+                color: {self._user_color};
+                border: {self._border_width}px solid {self._border_color};
+                padding: 10px;
+                font-size: {self._font_size}pt;
+                font-weight: {self._font_weight};
+            }}
+        """
+        self.chat_history.setStyleSheet(style_sheet)
+
     def set_font_size(self, font_size):
-        self.chat_history.setStyleSheet(f"QTextEdit {{ font-size: {font_size}pt; }}")
+        self._font_size = font_size
+        self.apply_styles()
 
     def set_font_weight(self, font_weight):
-        self.chat_history.setStyleSheet(f"QTextEdit {{ font-weight: {font_weight}; }}")
+        self._font_weight = font_weight
+        self.apply_styles()
 
     def set_user_color(self, user_color):
         self._user_color = user_color
-        self.apply_user_color()
+        self.apply_styles()
 
     def set_bot_color(self, bot_color):
         self._bot_color = bot_color
-        self.apply_bot_color()
+        self.apply_styles()
 
     def set_background_color(self, background_color):
         self._background_color = background_color
-        self.apply_background_color()
+        self.apply_styles()
 
     def set_border_color(self, border_color):
         self._border_color = border_color
-        self.apply_border_color()
-
-    def apply_user_color(self):
-        self.chat_history.setStyleSheet(f"QTextEdit {{ color: {self._user_color}; }}")
-
-    def apply_bot_color(self):
-        self.chat_history.setStyleSheet(f"QTextEdit {{ color: {self._bot_color}; }}")
-
-    def apply_background_color(self):
-        self.chat_history.setStyleSheet(f"QTextEdit {{ background-color: {self._background_color}; }}")
-
-    def apply_border_color(self):
-        self.chat_history.setStyleSheet(f"QTextEdit {{ border: {self._border_width}px solid {self._border_color}; }}")
+        self.apply_styles()
 
     def add_message(self, message, sender):
         sender_label = "Вы" if sender == "user" else "Бот"
