@@ -5,6 +5,7 @@ from PySide6 import QtWidgets
 from interface.ChatTab import ChatTab
 from interface.ImageGeneratorTab import ImageGeneratorTab
 
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -44,5 +45,3 @@ class MainWindow(QtWidgets.QMainWindow):
         status_bar = self.statusBar()
         status_bar.addPermanentWidget(copyright_label)
         print("Application started")
-
-
