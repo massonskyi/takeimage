@@ -19,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
             st = qss_file.read()
             self.setStyleSheet(st)
 
-        self.setWindowTitle("Kandinsky Image Generator API/UI")
+        self.setWindowTitle("Client")
         self.setFixedSize(1280, 800)
 
         # Create tab widget

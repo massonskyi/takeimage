@@ -1,1 +1,1 @@
-{"font_size": "16", "font_weight": "Bold", "user_color": "#fee0ff", "bot_color": "#8299ff", "background_color": "#edffd8", "border_color": "#ff3180", "temperature": 0.7, "top_p": 0.1, "n": 1, "max_tokens": 99, "repetition_penalty": 1.0}
+{"font_size": "16", "font_weight": "Bold", "user_color": "#6771ff", "bot_color": "#1d1e1c", "background_color": "#fccfff", "border_color": "#ff0004", "temperature": 0.7, "top_p": 0.1, "n": 1, "max_tokens": 99, "repetition_penalty": 1.0}

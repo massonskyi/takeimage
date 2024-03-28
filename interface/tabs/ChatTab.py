@@ -33,6 +33,8 @@ class ChatTab(QtWidgets.QWidget):
 
         # User input
         self.user_input = QtWidgets.QLineEdit()
+        self.user_input.returnPressed.connect(self.on_send_button_clicked)
+        self.user_input.installEventFilter(self)
         self.apply_lineedit_styles()  # Применить стили к полю ввода пользователя
 
         # Send button
@@ -151,9 +153,9 @@ class ChatTab(QtWidgets.QWidget):
                 """)
 
     def eventFilter(self, source, event):
-        if source == self.user_input and event.type() == QtCore.QEvent.Type.KeyPress:
-            if event.key() == QtCore.Qt.Key.Key_Enter:
-                self.on_send_button_clicked()
+        if source == self.user_input and event.type() == QtCore.QEvent.KeyPress:
+            if event.key() == QtCore.Qt.Key_Enter:
+                self.send_message()  # Вызов метода send_message вместо on_send_button_clicked
                 return True
         return super().eventFilter(source, event)
 
