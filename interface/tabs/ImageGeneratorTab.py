@@ -9,6 +9,8 @@ import aiohttp
 import requests
 from PIL import Image
 from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtCore import Signal
+
 from interface.urls import (
     LOCAL_URL
 )
@@ -25,6 +27,7 @@ class CustomEvent(QtCore.QEvent):
 
 
 class ImageGeneratorTab(QtWidgets.QWidget):
+    tab_selected = Signal()
     def __init__(self):
         super().__init__()
         self.status_label = None
@@ -118,6 +121,10 @@ class ImageGeneratorTab(QtWidgets.QWidget):
         main_layout.addLayout(left_layout)
         main_layout.addLayout(right_layout)
         self.setLayout(main_layout)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.tab_selected.emit()
 
     async def send_request(self):
 

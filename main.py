@@ -59,7 +59,47 @@ def check_and_create_critical_items(critical_items) -> bool:
         return True
 
 
-critical_items = ["config.env", "assets", "interface", "modules", "server", "config.py"]
+critical_items = [
+    "ckns.env",
+    "gchcfg.env",
+    "assets",
+    "assets/style",
+    "assets/style/darksynthic84.qss",
+    "assets/style/gitdark.qss",
+    "assets/style/neon.qss",
+    "assets/background.qml",
+    "assets/gui.qml",
+    "assets/settings.json",
+    "interface",
+    "interface/subwindow/__init__.py",
+    "interface/subwindow/SettingsChatWindow.py",
+    "interface/subwindow/TokenMissingWidget.py",
+    "interface/tabs/__init__.py",
+    "interface/tabs/ChatTab.py",
+    "interface/tabs/ImageGeneratorTab.py",
+    "interface/tabs/ProgramInfoTab.py",
+    "interface/__init__.py",
+    "interface/MainWindow.py",
+    "interface/server.py",
+    "interface/urls.py",
+    "modules/t2i/__init__.py",
+    "modules/t2i/ErrorCodes.py",
+    "modules/t2i/Text2Image.py",
+    "modules/t2i/utils.py",
+    "modules/txt2txt/__init__.py",
+    "modules/txt2txt/text2text.py",
+    "modules/__init__.py",
+    "server/__init__.py",
+    "server/app.py",
+    "server/models.py",
+    "modules",
+    "server",
+    "server/__init__.py",
+    "server/app.py",
+    "server/models.py",
+    "config.py",
+    "rq.txt"
+]
 
 if __name__ == "__main__":
     if not check_and_create_critical_items(critical_items):

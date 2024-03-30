@@ -21,7 +21,7 @@ class SettingsWindow(QtWidgets.QDialog):
         super().__init__()
         self.chat_tab = chat_tab
         self.initialize_ui()
-
+        self.windowTitle ="Settings"
     def initialize_ui(self):
         layout = QtWidgets.QVBoxLayout()
 

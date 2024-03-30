@@ -3,6 +3,8 @@ import json
 
 import aiohttp
 from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Signal
+
 from interface.urls import LOCAL_URL
 from interface.subwindow.SettingsChatWindow import SettingsWindow
 
@@ -16,6 +18,7 @@ def extract_color(style_sheet):
 
 
 class ChatTab(QtWidgets.QWidget):
+    tab_selected = Signal()
     def __init__(self):
         super().__init__()
         self._bot_color = None
@@ -68,6 +71,10 @@ class ChatTab(QtWidgets.QWidget):
         self._loop = asyncio.get_event_loop()
         self.load_default_styles()  # Загрузить стили по умолчанию
         self.load_user_settings()  # Загрузить настройки пользователя
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.tab_selected.emit()
 
     def load_default_styles(self):
         qss_file = open("assets/style/darksynthic84.qss", "r")

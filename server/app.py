@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from typing import List
 from modules.txt2txt.text2text import ChatAi
 from server.models import ImageRequest, QuestRequest
-from modules.t2i.Text2Image import text2image, get_all_style
+from modules.t2i.utils import text2image, get_all_style
 
 app = FastAPI()
 
@@ -39,11 +39,17 @@ def generate_images(request: ImageRequest):
     if request.width <= 0 or request.height <= 0:
         raise HTTPException(status_code=400, detail="Width and height must be greater than 0")
 
-    images = text2image(request.text, request.negative, request.style, request.count_request, request.width,
-                        request.height)
+    images, generation_response = text2image(
+        request.text,
+        request.negative,
+        request.style,
+        request.count_request,
+        request.width,
+        request.height
+    )
 
-    if not images:
-        raise HTTPException(status_code=500, detail="Failed to generate images")
+    if generation_response['code_app'] != 0:
+        raise HTTPException(status_code=500, detail=generation_response['message'])
 
     logger.info(f"Generated {len(images)} images for request: {request.dict()}")
     return [{"image": base64.b64encode(image_data).decode()} for image_data in images]
@@ -61,11 +67,26 @@ def generate_answer(request: QuestRequest):
     @cached(cache)
     def get_answer_from_cache(query):
         chat_ai = ChatAi()
-        return chat_ai.query(query, temperature=request.temperature, top_p=request.top_p, n=request.n,
-                             stream=request.stream, max_tokens=request.max_tokens,
-                             repetition_penalty=request.repetition_penalty)
+        chat_ai.load_env()
+        return chat_ai.query(query,
+                             temperature=request.temperature,
+                             top_p=request.top_p,
+                             n=request.n,
+                             stream=request.stream,
+                             max_tokens=request.max_tokens,
+                             repetition_penalty=request.repetition_penalty
+                             )
 
     answer = get_answer_from_cache(request.query)
 
     logger.info(f"Generated answer for query: {request.query}")
     return [{"answer": answer}]
+
+
+def test_run_server():
+    import uvicorn
+    uvicorn.run(app, host="localhost", port=5000)
+
+
+if __name__ == "__main__":
+    test_run_server()
